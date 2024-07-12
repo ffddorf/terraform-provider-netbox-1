@@ -2,6 +2,7 @@ package netbox
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/fbreckle/go-netbox/netbox/client"
 	"github.com/fbreckle/go-netbox/netbox/client/extras"
@@ -123,8 +124,15 @@ func resourceNetboxCustomFieldUpdate(d *schema.ResourceData, m interface{}) erro
 
 	ctypes, ok := d.GetOk("content_types")
 	if ok {
-		for _, t := range ctypes.(*schema.Set).List() {
-			data.ContentTypes = append(data.ContentTypes, t.(string))
+		ctypes := ctypes.(*schema.Set).List()
+		objectTypes := make([]string, 0, len(ctypes))
+		for _, t := range ctypes {
+			objectTypes = append(objectTypes, t.(string))
+		}
+		if strings.HasPrefix(netboxVersion, "4.") {
+			data.ObjectTypes = objectTypes
+		} else {
+			data.ContentTypes = objectTypes
 		}
 	}
 
@@ -169,8 +177,15 @@ func resourceNetboxCustomFieldCreate(d *schema.ResourceData, m interface{}) erro
 
 	ctypes, ok := d.GetOk("content_types")
 	if ok {
-		for _, t := range ctypes.(*schema.Set).List() {
-			data.ContentTypes = append(data.ContentTypes, t.(string))
+		ctypes := ctypes.(*schema.Set).List()
+		objectTypes := make([]string, 0, len(ctypes))
+		for _, t := range ctypes {
+			objectTypes = append(objectTypes, t.(string))
+		}
+		if strings.HasPrefix(netboxVersion, "4.") {
+			data.ObjectTypes = objectTypes
+		} else {
+			data.ContentTypes = objectTypes
 		}
 	}
 
@@ -218,7 +233,11 @@ func resourceNetboxCustomFieldRead(d *schema.ResourceData, m interface{}) error 
 	d.Set("name", customField.Name)
 	d.Set("type", *customField.Type.Value)
 
-	d.Set("content_types", customField.ContentTypes)
+	if len(customField.ContentTypes) > 0 {
+		d.Set("content_types", customField.ContentTypes)
+	} else {
+		d.Set("content_types", customField.ObjectTypes)
+	}
 
 	choiceSet := customField.ChoiceSet
 	if choiceSet != nil {
