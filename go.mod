@@ -4,7 +4,7 @@ go 1.21
 
 toolchain go1.21.3
 
-replace github.com/fbreckle/go-netbox => github.com/ffddorf/go-netbox v0.0.0-20240712194902-8714ccf1b60b
+replace github.com/fbreckle/go-netbox => github.com/ffddorf/go-netbox v0.0.0-20240712203246-697d4aa8d19a
 
 require (
 	github.com/fbreckle/go-netbox v0.0.0-20240605151924-91a3f439c86c
