@@ -105,7 +105,11 @@ func resourceNetboxContactAssignmentRead(d *schema.ResourceData, m interface{}) 
 		return err
 	}
 
-	d.Set("content_type", res.GetPayload().ContentType)
+	ct := res.GetPayload().ContentType
+	if ct == "" {
+		ct = res.GetPayload().ObjectType
+	}
+	d.Set("content_type", ct)
 
 	if res.GetPayload().ObjectID != nil {
 		d.Set("object_id", res.GetPayload().ObjectID)
