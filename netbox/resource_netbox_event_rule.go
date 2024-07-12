@@ -3,6 +3,7 @@ package netbox
 import (
 	"encoding/json"
 	"strconv"
+	"strings"
 
 	"github.com/fbreckle/go-netbox/netbox/client"
 	"github.com/fbreckle/go-netbox/netbox/client/extras"
@@ -126,8 +127,15 @@ func resourceNetboxEventRuleCreate(d *schema.ResourceData, m interface{}) error 
 	tags, _ := getNestedTagListFromResourceDataSet(api, d.Get(tagsKey))
 	data.Tags = tags
 
+	ctypes := d.Get("content_types").(*schema.Set).List()
+	objectTypes := make([]string, 0, len(ctypes))
 	for _, contentType := range d.Get("content_types").(*schema.Set).List() {
-		data.ContentTypes = append(data.ContentTypes, contentType.(string))
+		objectTypes = append(objectTypes, contentType.(string))
+	}
+	if strings.HasPrefix(netboxVersion, "4.") {
+		data.ObjectTypes = objectTypes
+	} else {
+		data.ContentTypes = objectTypes
 	}
 
 	if conditionsData, ok := d.GetOk("conditions"); ok {
@@ -172,7 +180,11 @@ func resourceNetboxEventRuleRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("name", eventRule.Name)
 	d.Set("description", eventRule.Description)
 	d.Set("action_type", eventRule.ActionType.Value)
-	d.Set("content_types", eventRule.ContentTypes)
+	if len(eventRule.ContentTypes) > 0 {
+		d.Set("content_types", eventRule.ContentTypes)
+	} else {
+		d.Set("content_types", eventRule.ObjectTypes)
+	}
 
 	d.Set("trigger_on_create", eventRule.TypeCreate)
 	d.Set("trigger_on_update", eventRule.TypeUpdate)
@@ -236,8 +248,15 @@ func resourceNetboxEventRuleUpdate(d *schema.ResourceData, m interface{}) error 
 	tags, _ := getNestedTagListFromResourceDataSet(api, d.Get(tagsKey))
 	data.Tags = tags
 
+	ctypes := d.Get("content_types").(*schema.Set).List()
+	objectTypes := make([]string, 0, len(ctypes))
 	for _, contentType := range d.Get("content_types").(*schema.Set).List() {
-		data.ContentTypes = append(data.ContentTypes, contentType.(string))
+		objectTypes = append(objectTypes, contentType.(string))
+	}
+	if strings.HasPrefix(netboxVersion, "4.") {
+		data.ObjectTypes = objectTypes
+	} else {
+		data.ContentTypes = objectTypes
 	}
 
 	params := extras.NewExtrasEventRulesUpdateParams().WithID(id).WithData(&data)
