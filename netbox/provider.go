@@ -12,6 +12,8 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+var netboxVersion string
+
 // This makes the description contain the default value, particularly useful for the docs
 // From https://github.com/hashicorp/terraform-plugin-docs/issues/65#issuecomment-1152842370
 func init() {
@@ -293,7 +295,7 @@ func providerConfigure(ctx context.Context, data *schema.ResourceData) (interfac
 			return nil, diag.FromErr(err)
 		}
 
-		netboxVersion := res.GetPayload().(map[string]interface{})["netbox-version"].(string)
+		netboxVersion = res.GetPayload().(map[string]interface{})["netbox-version"].(string)
 
 		supportedVersions := []string{"3.7.0", "3.7.1", "3.7.2", "3.7.3", "3.7.4", "3.7.5", "3.7.6", "3.7.7", "3.7.8"}
 

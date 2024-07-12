@@ -2,6 +2,7 @@ package netbox
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/fbreckle/go-netbox/netbox/client"
 	"github.com/fbreckle/go-netbox/netbox/client/tenancy"
@@ -64,7 +65,11 @@ func resourceNetboxContactAssignmentCreate(d *schema.ResourceData, m interface{}
 
 	data := &models.WritableContactAssignment{}
 
-	data.ContentType = &contentType
+	if strings.HasPrefix(netboxVersion, "4.") {
+		data.ObjectType = contentType
+	} else {
+		data.ContentType = contentType
+	}
 	data.ObjectID = &objectID
 	data.Contact = &contactID
 	data.Role = &roleID
@@ -130,7 +135,11 @@ func resourceNetboxContactAssignmentUpdate(d *schema.ResourceData, m interface{}
 	roleID := int64(d.Get("role_id").(int))
 	priority := d.Get("priority").(string)
 
-	data.ContentType = &contentType
+	if strings.HasPrefix(netboxVersion, "4.") {
+		data.ObjectType = contentType
+	} else {
+		data.ContentType = contentType
+	}
 	if objectID != 0 {
 		data.ObjectID = &objectID
 	}
